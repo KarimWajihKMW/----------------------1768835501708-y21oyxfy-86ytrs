@@ -5,67 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة أكوادرا للتداول | Akwadra Crypto</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: 'Cairo', sans-serif;
+        background-color: #020617;
+        background-image: 
+          radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+          radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+          radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
       }
+      
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
+        width: 6px;
+        height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #1e293b;
+        background: #0f172a;
       }
       ::-webkit-scrollbar-thumb {
-        background: #475569;
-        border-radius: 4px;
+        background: #334155;
+        border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #64748b;
+        background: #475569;
       }
       
       .glass-panel {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       }
 
-      .animate-pulse-fast {
-        animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      .glass-button {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      .glass-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
       }
 
-      @keyframes flash-green {
-        0% { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
-        100% { color: white; }
+      /* Animations */
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
       }
-      @keyframes flash-red {
-        0% { color: #f43f5e; text-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
-        100% { color: white; }
+      .animate-float { animation: float 6s ease-in-out infinite; }
+
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); }
       }
-      .flash-up { animation: flash-green 0.5s ease-out; }
-      .flash-down { animation: flash-red 0.5s ease-out; }
+      .glow-green { animation: pulse-glow 2s infinite; }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .slide-in { animation: slideIn 0.5s ease-out forwards; }
+
+      @keyframes ticker {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+      .animate-marquee-rtl {
+        display: inline-block;
+        animation: ticker 25s linear infinite;
+      }
+      
+      /* Price Flash Effects */
+      @keyframes flash-green-text {
+        0% { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.8); transform: scale(1.05); }
+        100% { color: white; transform: scale(1); }
+      }
+      @keyframes flash-red-text {
+        0% { color: #fb7185; text-shadow: 0 0 10px rgba(251, 113, 133, 0.8); transform: scale(1.05); }
+        100% { color: white; transform: scale(1); }
+      }
+      .flash-up { animation: flash-green-text 0.6s ease-out; }
+      .flash-down { animation: flash-red-text 0.6s ease-out; }
+
+      /* Candle Chart Simulation */
+      .candle-wick {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1px;
+        background: currentColor;
+        opacity: 0.6;
+      }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col overflow-x-hidden">
+<body class="text-slate-200 min-h-screen flex flex-col overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
     
+    <!-- Notification Container -->
+    <div id="toast-container" class="fixed top-20 left-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- Navbar -->
-    <nav class="glass-panel sticky top-0 z-50 border-b border-slate-800">
+    <nav class="glass-panel sticky top-0 z-50 border-b border-slate-800/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 animate-float">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
-                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">أكوادرا كريبتو</span>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">أكوادرا</span>
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase -mt-1">Crypto Exchange</span>
+                    </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-4 space-x-reverse">
-                    <div class="flex flex-col items-end mr-4">
-                        <span class="text-xs text-slate-400">رصيد المحفظة</span>
-                        <span class="font-bold text-emerald-400 tracking-wider" id="wallet-balance">$10,000.00</span>
+                    <div class="glass-button px-4 py-1.5 rounded-full flex flex-col items-end mr-4 group cursor-pointer">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider group-hover:text-indigo-300 transition-colors">رصيد المحفظة</span>
+                        <span class="font-bold text-emerald-400 font-mono text-lg tracking-tight" id="wallet-balance">$10,000.00</span>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <div class="w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 hover:border-indigo-500/50 flex items-center justify-center transition-all cursor-pointer hover:bg-slate-700/50">
+                        <svg class="w-5 h-5 text-slate-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </div>
                 </div>
             </div>
@@ -73,27 +136,30 @@
     </nav>
 
     <!-- Price Ticker -->
-    <div class="bg-slate-900 border-b border-slate-800 py-2 overflow-hidden">
-        <div class="flex space-x-8 space-x-reverse animate-marquee whitespace-nowrap text-sm">
-            <div class="flex items-center gap-2 px-4">
+    <div class="bg-slate-950/50 border-b border-slate-800/60 py-2 overflow-hidden relative">
+        <div class="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-950/50 to-transparent z-10"></div>
+        <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-950/50 to-transparent z-10"></div>
+        
+        <div class="flex space-x-8 space-x-reverse whitespace-nowrap text-sm overflow-x-auto no-scrollbar py-1">
+            <div class="flex items-center gap-3 px-6 py-1 bg-slate-900/40 rounded-full border border-slate-800 hover:border-orange-500/30 transition-colors">
                 <span class="font-bold text-orange-500">BTC</span>
-                <span class="text-slate-300" id="btc-price">$45,230.50</span>
-                <span class="text-emerald-500 text-xs">+2.4%</span>
+                <span class="text-slate-200 font-mono" id="btc-price">$45,230.50</span>
+                <span class="text-emerald-500 text-xs bg-emerald-500/10 px-1.5 py-0.5 rounded">+2.4%</span>
             </div>
-            <div class="flex items-center gap-2 px-4 border-r border-slate-800">
+            <div class="flex items-center gap-3 px-6 py-1 bg-slate-900/40 rounded-full border border-slate-800 hover:border-blue-500/30 transition-colors">
                 <span class="font-bold text-blue-500">ETH</span>
-                <span class="text-slate-300" id="eth-price">$2,890.10</span>
-                <span class="text-rose-500 text-xs">-0.8%</span>
+                <span class="text-slate-200 font-mono" id="eth-price">$2,890.10</span>
+                <span class="text-rose-500 text-xs bg-rose-500/10 px-1.5 py-0.5 rounded">-0.8%</span>
             </div>
-            <div class="flex items-center gap-2 px-4 border-r border-slate-800">
+            <div class="flex items-center gap-3 px-6 py-1 bg-slate-900/40 rounded-full border border-slate-800 hover:border-yellow-500/30 transition-colors">
                 <span class="font-bold text-yellow-500">BNB</span>
-                <span class="text-slate-300">$320.45</span>
-                <span class="text-emerald-500 text-xs">+1.2%</span>
+                <span class="text-slate-200 font-mono">$320.45</span>
+                <span class="text-emerald-500 text-xs bg-emerald-500/10 px-1.5 py-0.5 rounded">+1.2%</span>
             </div>
-            <div class="flex items-center gap-2 px-4 border-r border-slate-800">
-                <span class="font-bold text-indigo-400">SOL</span>
-                <span class="text-slate-300">$104.20</span>
-                <span class="text-emerald-500 text-xs">+5.6%</span>
+            <div class="flex items-center gap-3 px-6 py-1 bg-slate-900/40 rounded-full border border-slate-800 hover:border-purple-500/30 transition-colors">
+                <span class="font-bold text-purple-400">SOL</span>
+                <span class="text-slate-200 font-mono">$104.20</span>
+                <span class="text-emerald-500 text-xs bg-emerald-500/10 px-1.5 py-0.5 rounded">+5.6%</span>
             </div>
         </div>
     </div>
@@ -102,57 +168,95 @@
     <main class="flex-grow p-4 lg:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         <!-- Left Column (Chart & History) -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
+        <div class="lg:col-span-8 flex flex-col gap-6 slide-in" style="animation-delay: 0.1s;">
             <!-- Chart Section -->
-            <div class="glass-panel rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 font-bold">₿</span>
-                            <h2 class="text-xl font-bold text-white">Bitcoin <span class="text-slate-500 text-sm font-normal">/ USD</span></h2>
-                        </div>
-                        <span class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-400">1H</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-white" id="main-price">$45,230.50</div>
-                            <div class="text-sm text-emerald-500">+$1,230.00 (2.4%)</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="glass-panel rounded-3xl p-1 shadow-2xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-500 opacity-50"></div>
                 
-                <!-- Simulated Chart -->
-                <div class="h-64 w-full bg-slate-800/30 rounded-lg relative overflow-hidden border border-slate-700/50 flex items-end justify-between px-2 pt-10" id="chart-container">
-                    <!-- Bars will be inserted by JS -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
-                    <div class="absolute top-1/2 left-0 w-full h-px bg-slate-700/30 border-t border-dashed border-slate-600"></div>
+                <div class="p-6">
+                    <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-orange-500/20">
+                                    ₿
+                                </div>
+                                <div class="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5">
+                                    <div class="w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                                    Bitcoin 
+                                    <span class="text-slate-500 text-lg font-normal bg-slate-800/50 px-2 py-0.5 rounded-lg">BTC/USD</span>
+                                </h2>
+                                <p class="text-slate-400 text-xs mt-1">سوق العملات الرقمية العالمي</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                             <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
+                                <button class="px-3 py-1 rounded-md text-xs font-bold bg-slate-700 text-white shadow-sm">1H</button>
+                                <button class="px-3 py-1 rounded-md text-xs font-bold text-slate-500 hover:text-white hover:bg-slate-700/50 transition-colors">4H</button>
+                                <button class="px-3 py-1 rounded-md text-xs font-bold text-slate-500 hover:text-white hover:bg-slate-700/50 transition-colors">1D</button>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-3xl font-black text-white font-mono tracking-tight" id="main-price">$45,230.50</div>
+                                <div class="text-sm text-emerald-400 font-bold flex justify-end items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                                    <span>+$1,230.00 (2.4%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Simulated Chart -->
+                    <div class="h-[400px] w-full bg-slate-900/40 rounded-2xl relative overflow-hidden border border-slate-800 flex items-end justify-between px-4 pt-10" id="chart-container">
+                        <!-- Grid Lines -->
+                        <div class="absolute inset-0 pointer-events-none">
+                            <div class="h-full w-full" style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px;"></div>
+                        </div>
+                        
+                        <!-- Current Price Line -->
+                        <div class="absolute top-1/2 left-0 w-full h-px bg-indigo-500/50 border-t border-dashed border-indigo-400/50 z-10 flex items-center">
+                             <span class="absolute left-0 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-r-md font-mono">LIVE</span>
+                        </div>
+                        
+                        <!-- Bars generated by JS -->
+                    </div>
                 </div>
             </div>
 
             <!-- Transaction History -->
-            <div class="glass-panel rounded-2xl p-6 shadow-lg">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    سجل العمليات
-                </h3>
+            <div class="glass-panel rounded-3xl p-6 shadow-lg border-t border-slate-800">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold flex items-center gap-2 text-white">
+                        <span class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        سجل العمليات الأخيرة
+                    </h3>
+                    <button class="text-xs text-indigo-400 hover:text-indigo-300 font-bold">عرض الكل</button>
+                </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-right">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-800/50">
+                    <table class="w-full text-sm text-right border-collapse">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-900/30">
                             <tr>
-                                <th class="px-4 py-3 rounded-r-lg">العملة</th>
+                                <th class="px-4 py-3 rounded-r-xl">العملة</th>
                                 <th class="px-4 py-3">النوع</th>
                                 <th class="px-4 py-3">السعر</th>
                                 <th class="px-4 py-3">الكمية</th>
-                                <th class="px-4 py-3 rounded-l-lg">الوقت</th>
+                                <th class="px-4 py-3 rounded-l-xl">الوقت</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800" id="history-list">
-                            <tr class="hover:bg-slate-800/50 transition-colors">
-                                <td class="px-4 py-3 font-medium">BTC</td>
-                                <td class="px-4 py-3 text-emerald-500">شراء</td>
-                                <td class="px-4 py-3">$42,100.00</td>
-                                <td class="px-4 py-3">0.05</td>
-                                <td class="px-4 py-3 text-slate-500">10:45 AM</td>
+                        <tbody class="divide-y divide-slate-800/50" id="history-list">
+                            <tr class="hover:bg-slate-800/30 transition-colors group">
+                                <td class="px-4 py-4 font-bold text-slate-200 flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center text-xs">₿</span>
+                                    BTC
+                                </td>
+                                <td class="px-4 py-4"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md text-xs font-bold">شراء</span></td>
+                                <td class="px-4 py-4 font-mono text-slate-300">$42,100.00</td>
+                                <td class="px-4 py-4 font-mono text-slate-300">0.05</td>
+                                <td class="px-4 py-4 text-slate-500 text-xs">10:45 AM</td>
                             </tr>
                         </tbody>
                     </table>
@@ -161,34 +265,61 @@
         </div>
 
         <!-- Right Column (Order Book & Trading) -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
+        <div class="lg:col-span-4 flex flex-col gap-6 slide-in" style="animation-delay: 0.2s;">
             
             <!-- Trading Panel -->
-            <div class="glass-panel rounded-2xl p-6 shadow-xl border-t-4 border-indigo-500">
-                <div class="flex gap-2 mb-6 p-1 bg-slate-900/50 rounded-lg">
-                    <button class="flex-1 py-2 text-sm font-semibold rounded-md bg-indigo-600 text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95">فوري</button>
-                    <button class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-400 hover:text-white transition-colors">حد</button>
+            <div class="glass-panel rounded-3xl p-6 shadow-xl border-t-4 border-indigo-500 relative overflow-hidden">
+                <!-- Glow effect -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -mr-10 -mt-10 pointer-events-none"></div>
+
+                <div class="flex gap-1 mb-6 p-1 bg-slate-950/50 rounded-xl">
+                    <button class="flex-1 py-2.5 text-sm font-bold rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-95">فوري</button>
+                    <button class="flex-1 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">حد</button>
+                    <button class="flex-1 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">هامش</button>
                 </div>
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">السعر (USD)</label>
+                <div class="space-y-5 relative z-10">
+                    <div class="group">
+                        <label class="flex justify-between text-xs text-slate-400 mb-2 font-semibold px-1">
+                            <span>السعر (USD)</span>
+                            <span class="text-indigo-400 cursor-pointer hover:text-indigo-300">أفضل سعر سوق</span>
+                        </label>
                         <div class="relative">
-                            <input type="text" value="45230.50" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono" readonly>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">الكمية (BTC)</label>
-                        <div class="relative">
-                            <input type="number" id="trade-amount" placeholder="0.00" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono">
+                            <input type="text" value="45230.50" class="w-full bg-slate-950/80 border border-slate-700/50 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono shadow-inner" readonly>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">USD</span>
                         </div>
                     </div>
                     
+                    <div class="group">
+                        <label class="flex justify-between text-xs text-slate-400 mb-2 font-semibold px-1">
+                            <span>الكمية (BTC)</span>
+                            <span class="text-indigo-400 cursor-pointer hover:text-indigo-300" id="max-buy-btn">الكل (100%)</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="trade-amount" placeholder="0.00" step="0.01" class="w-full bg-slate-950/80 border border-slate-700/50 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono shadow-inner placeholder:text-slate-600">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">BTC</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Slider for percentage -->
+                    <div class="px-1">
+                         <input type="range" min="0" max="100" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 hover:accent-indigo-400">
+                         <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                             <span>0%</span>
+                             <span>25%</span>
+                             <span>50%</span>
+                             <span>75%</span>
+                             <span>100%</span>
+                         </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3 pt-2">
-                        <button id="btn-buy" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all duration-200">
+                        <button id="btn-buy" class="relative overflow-hidden group bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 transition-all duration-300">
+                            <div class="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 -skew-x-12 -translate-x-full"></div>
                             شراء BTC
                         </button>
-                        <button id="btn-sell" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all duration-200">
+                        <button id="btn-sell" class="relative overflow-hidden group bg-gradient-to-br from-rose-500 to-rose-700 hover:from-rose-400 hover:to-rose-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-rose-500/20 transform hover:-translate-y-1 transition-all duration-300">
+                            <div class="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 -skew-x-12 -translate-x-full"></div>
                             بيع BTC
                         </button>
                     </div>
@@ -196,37 +327,51 @@
             </div>
 
             <!-- Order Book -->
-            <div class="glass-panel rounded-2xl p-5 shadow-lg flex-grow">
-                <h3 class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">دفتر الطلبات</h3>
-                <div class="grid grid-cols-2 gap-4 text-xs font-mono mb-2 text-slate-500 border-b border-slate-800 pb-2">
+            <div class="glass-panel rounded-3xl p-6 shadow-lg flex-grow flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">دفتر الطلبات</h3>
+                    <div class="flex gap-1">
+                         <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+                         <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+                         <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2 text-[10px] font-bold uppercase mb-2 text-slate-500 pb-2 border-b border-slate-800/50">
                     <span>السعر (USD)</span>
-                    <span class="text-left">الكمية</span>
+                    <span class="text-center">الكمية (BTC)</span>
+                    <span class="text-left">الإجمالي</span>
                 </div>
                 
                 <!-- Asks (Red) -->
-                <div class="space-y-1 mb-2" id="order-book-asks">
+                <div class="space-y-0.5 flex-1 overflow-hidden" id="order-book-asks">
                     <!-- Populated by JS -->
                 </div>
                 
-                <div class="py-2 my-2 border-y border-slate-800 text-center font-bold text-lg text-white" id="mid-price">
-                    45,230.50
+                <div class="py-3 my-2 border-y border-slate-800/50 flex justify-between items-center px-2 bg-slate-900/30 rounded-lg">
+                    <div class="text-lg font-bold text-white font-mono tracking-tight" id="mid-price">45,230.50</div>
+                    <div class="text-xs text-emerald-400 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        $45,230.50
+                    </div>
                 </div>
 
                 <!-- Bids (Green) -->
-                <div class="space-y-1" id="order-book-bids">
+                <div class="space-y-0.5 flex-1 overflow-hidden" id="order-book-bids">
                     <!-- Populated by JS -->
                 </div>
             </div>
 
-            <!-- PRESERVED FEATURE: The Welcome Card, repurposed but functional -->
-            <div class="glass-panel p-6 rounded-xl shadow-lg border border-slate-700 hover:scale-105 transition-all duration-300 cursor-pointer card group">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-indigo-900/50 transition-colors">
-                         <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <!-- Info Card -->
+            <div class="glass-panel p-5 rounded-2xl shadow-lg border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-300 cursor-pointer card group relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/20 rounded-full blur-2xl group-hover:bg-indigo-500/30 transition-all"></div>
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-12 h-12 bg-slate-800/80 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-lg">
+                         <svg class="w-6 h-6 text-indigo-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                     <div>
-                        <h2 class="text-sm font-bold text-white mb-0.5">جديد في أكوادرا؟</h2>
-                        <p class="text-slate-400 text-xs">اضغط هنا للمساعدة في البناء</p>
+                        <h2 class="text-sm font-bold text-white mb-1 group-hover:text-indigo-200 transition-colors">هل تحتاج مساعدة؟</h2>
+                        <p class="text-slate-400 text-xs leading-relaxed">تواصل مع فريق الدعم الفني المباشر</p>
                     </div>
                 </div>
             </div>
