@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initChartJS();
     initOrderBook();
     initMarkets();
+    initPositions(); // New for Futures
     
     // Start live updates
     setInterval(updateMarket, 2000);
@@ -48,6 +49,15 @@ function setupEventListeners() {
     const btnSell = document.getElementById('btn-sell');
     const card = document.querySelector('.card');
     const maxBuyBtn = document.getElementById('max-buy-btn');
+    
+    // Leverage Slider Logic
+    const slider = document.getElementById('leverage-slider');
+    if(slider) {
+        slider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('leverage-value').innerText = val + 'x';
+        });
+    }
 
     if (btnBuy) btnBuy.addEventListener('click', () => executeTrade('buy'));
     if (btnSell) btnSell.addEventListener('click', () => executeTrade('sell'));
@@ -163,7 +173,7 @@ function switchPair(pair) {
         // Update Labels
         const nameEl = document.getElementById('active-pair-name');
         const priceEl = document.getElementById('active-pair-price');
-        if(nameEl) nameEl.innerText = pair;
+        if(nameEl) nameEl.innerHTML = pair + (window.location.href.includes('futures') ? ' <span class="text-sm text-slate-400 font-normal ml-2">Perp</span>' : '');
         if(priceEl) priceEl.innerText = '$' + state.currentPrice.toLocaleString();
         
         updateUI();
@@ -319,6 +329,37 @@ function renderOrderRows(elementId, isAsk) {
     }
 }
 
+// --- Positions Logic (Futures) ---
+function initPositions() {
+    const list = document.getElementById('positions-list');
+    if(!list) return;
+    
+    // Populate with some fake data if empty
+    const fakePositions = [
+        { pair: 'ETH/USDT', type: 'Long', leverage: '20x', amount: '2.5 ETH', entry: 2320.50, liq: 2210.00, pnl: 45.20 },
+        { pair: 'SOL/USDT', type: 'Short', leverage: '10x', amount: '50 SOL', entry: 105.20, liq: 115.50, pnl: 120.50 }
+    ];
+    
+    list.innerHTML = fakePositions.map(pos => {
+        const pnlClass = pos.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        const typeClass = pos.type === 'Long' ? 'text-emerald-400' : 'text-rose-400';
+        
+        return `
+        <tr class="hover:bg-slate-800/30 transition-colors border-b border-slate-800/30">
+            <td class="px-3 py-2 font-bold text-white">${pos.pair}</td>
+            <td class="px-3 py-2 text-slate-400">${pos.leverage}</td>
+            <td class="px-3 py-2 text-slate-300">${pos.amount}</td>
+            <td class="px-3 py-2 font-mono text-slate-300">${pos.entry.toFixed(2)}</td>
+            <td class="px-3 py-2 font-mono text-orange-400">${pos.liq.toFixed(2)}</td>
+            <td class="px-3 py-2 font-mono font-bold ${pnlClass}">${pos.pnl > 0 ? '+' : ''}${pos.pnl.toFixed(2)}</td>
+            <td class="px-3 py-2">
+                <button class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded transition-colors">Close</button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+}
+
 // --- Market Simulation ---
 function updateMarket() {
     // Simulate Main Price Change
@@ -345,7 +386,7 @@ function updateMarket() {
     });
     
     const priceInput = document.querySelector('input[readonly]');
-    if (priceInput) priceInput.value = state.currentPrice.toFixed(2);
+    if (priceInput && !priceInput.value.includes('Market')) priceInput.value = state.currentPrice.toFixed(2);
 
     // Simulate Other Markets
     state.markets.forEach(m => {
@@ -384,16 +425,16 @@ function executeTrade(type) {
         state.walletBalance -= totalCost;
         state.holdings += amount;
         addToHistory('BTC', 'شراء', state.currentPrice, amount);
-        showToast(`تم شراء ${amount} BTC بنجاح!`, 'success');
+        showToast(window.location.href.includes('futures') ? 'تم فتح صفقة Long بنجاح!' : `تم شراء ${amount} BTC بنجاح!`, 'success');
     } else {
-        if (amount > state.holdings) {
+        if (amount > state.holdings && !window.location.href.includes('futures')) {
             showToast('عذراً، لا تملك رصيد كافي من العملة', 'error');
             return;
         }
         state.walletBalance += totalCost;
         state.holdings -= amount;
         addToHistory('BTC', 'بيع', state.currentPrice, amount);
-        showToast(`تم بيع ${amount} BTC بنجاح!`, 'success');
+        showToast(window.location.href.includes('futures') ? 'تم فتح صفقة Short بنجاح!' : `تم بيع ${amount} BTC بنجاح!`, 'success');
     }
     
     updateUI();
