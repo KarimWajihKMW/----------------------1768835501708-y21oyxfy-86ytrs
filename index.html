@@ -15,6 +15,8 @@
           radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
           radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
           radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+        color: #e2e8f0;
+        overflow-x: hidden;
       }
       
       /* Custom Scrollbar */
@@ -80,6 +82,7 @@
       .animate-marquee-rtl {
         display: inline-block;
         animation: ticker 25s linear infinite;
+        white-space: nowrap;
       }
       
       /* Price Flash Effects */
@@ -102,6 +105,279 @@
         transform: translateY(-3px) scale(1.1);
         color: #818cf8;
       }
+      
+      /* Hide number input spinners */
+      input[type=number]::-webkit-inner-spin-button, 
+      input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+      }
     </style>
 </head>
-<body class=
+<body class="min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- Navbar -->
+    <nav class="glass-panel sticky top-0 z-50 border-b border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 animate-float">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <a href="index.html" class="flex flex-col group">
+                        <span class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 group-hover:to-white transition-all">أكوادرا</span>
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase -mt-1">Crypto Exchange</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center space-x-6 space-x-reverse">
+                    <a href="#" class="text-sm font-bold text-white hover:text-indigo-400 transition-colors">الأسواق</a>
+                    <a href="#" class="text-sm font-bold text-slate-400 hover:text-white transition-colors">تداول فوري</a>
+                    <a href="#" class="text-sm font-bold text-slate-400 hover:text-white transition-colors">العقود الآجلة</a>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button id="notification-btn" class="glass-button w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white relative">
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        </button>
+                        <!-- Dropdown -->
+                        <div id="notification-dropdown" class="absolute left-0 mt-3 w-80 glass-panel rounded-2xl shadow-2xl invisible opacity-0 transform scale-95 transition-all duration-200 origin-top-left z-50 overflow-hidden">
+                            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+                                <span class="font-bold text-white text-sm">الإشعارات</span>
+                                <span class="text-xs text-indigo-400 cursor-pointer hover:underline">تحديد الكل كمقروء</span>
+                            </div>
+                            <div id="notification-list" class="max-h-64 overflow-y-auto">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile -->
+                    <a href="profile.html" class="flex items-center gap-2 pl-2 pr-1 py-1 glass-button rounded-full">
+                        <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="User" class="w-8 h-8 rounded-full border border-slate-600">
+                        <span class="text-xs font-bold text-white hidden sm:block ml-2">حسابي</span>
+                        <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ticker Tape -->
+    <div class="bg-slate-900/50 border-b border-slate-800/50 h-10 flex items-center overflow-hidden">
+        <div class="animate-marquee-rtl flex items-center gap-8 px-4 text-sm font-mono">
+            <span class="flex items-center gap-2 text-slate-400">BTC/USDT <span class="text-emerald-400 font-bold">+2.4%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">ETH/USDT <span class="text-rose-400 font-bold">-1.2%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">SOL/USDT <span class="text-emerald-400 font-bold">+5.7%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">BNB/USDT <span class="text-emerald-400 font-bold">+0.8%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">XRP/USDT <span class="text-rose-400 font-bold">-0.5%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">ADA/USDT <span class="text-emerald-400 font-bold">+1.1%</span></span>
+            <!-- Duplicate for seamless loop -->
+            <span class="flex items-center gap-2 text-slate-400 border-r border-slate-800 pr-8">|</span>
+             <span class="flex items-center gap-2 text-slate-400">BTC/USDT <span class="text-emerald-400 font-bold">+2.4%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">ETH/USDT <span class="text-rose-400 font-bold">-1.2%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">SOL/USDT <span class="text-emerald-400 font-bold">+5.7%</span></span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column (Chart) -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Market Info Header -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4 slide-in">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">₿</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-white flex items-center gap-2">
+                            Bitcoin 
+                            <span class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded">BTC/USDT</span>
+                        </h1>
+                        <div class="flex items-center gap-2">
+                            <span id="main-price" class="text-2xl font-mono font-bold text-emerald-400">$45,230.50</span>
+                            <span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">+2.45%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-4 text-center text-xs">
+                    <div>
+                        <p class="text-slate-500 mb-1">أعلى 24س</p>
+                        <p class="font-mono text-slate-200">46,100.00</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 mb-1">أدنى 24س</p>
+                        <p class="font-mono text-slate-200">44,850.00</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 mb-1">الحجم (BTC)</p>
+                        <p class="font-mono text-slate-200">45,210.11</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Area -->
+            <div class="glass-panel p-4 rounded-2xl h-[450px] relative slide-in" style="animation-delay: 0.1s;">
+                <!-- Timeframe Selectors -->
+                <div class="absolute top-4 left-4 z-10 flex gap-1 bg-slate-900/80 p-1 rounded-lg border border-slate-700/50">
+                    <button onclick="changeTimeframe('1H')" class="px-3 py-1 text-xs font-bold rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">1H</button>
+                    <button onclick="changeTimeframe('4H')" class="px-3 py-1 text-xs font-bold rounded bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">4H</button>
+                    <button onclick="changeTimeframe('1D')" class="px-3 py-1 text-xs font-bold rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">1D</button>
+                    <button onclick="changeTimeframe('1W')" class="px-3 py-1 text-xs font-bold rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">1W</button>
+                </div>
+                <canvas id="cryptoChart"></canvas>
+            </div>
+
+            <!-- History Section -->
+            <div class="glass-panel rounded-2xl overflow-hidden slide-in" style="animation-delay: 0.2s;">
+                <div class="px-6 py-4 border-b border-slate-800/60 flex justify-between items-center">
+                    <h3 class="font-bold text-white">سجل العمليات الحديثة</h3>
+                    <button class="text-xs text-indigo-400 hover:text-indigo-300">عرض الكل</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-slate-900/50 text-slate-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="px-4 py-3">الزوج</th>
+                                <th class="px-4 py-3">النوع</th>
+                                <th class="px-4 py-3">السعر</th>
+                                <th class="px-4 py-3">الكمية</th>
+                                <th class="px-4 py-3">الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list" class="divide-y divide-slate-800/30">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Trading & Order Book) -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Order Book -->
+            <div class="glass-panel p-4 rounded-2xl slide-in" style="animation-delay: 0.1s;">
+                <h3 class="text-sm font-bold text-slate-400 mb-3 px-2">دفتر الطلبات</h3>
+                <div class="grid grid-cols-3 text-[10px] text-slate-500 font-bold px-2 mb-2">
+                    <span>السعر (USDT)</span>
+                    <span class="text-center">الكمية (BTC)</span>
+                    <span class="text-left">الإجمالي</span>
+                </div>
+                
+                <!-- Asks (Red) -->
+                <div id="order-book-asks" class="space-y-0.5 mb-2"></div>
+                
+                <!-- Current Price -->
+                <div class="py-3 my-2 border-y border-slate-800/50 flex justify-center items-center gap-2">
+                    <span id="mid-price" class="text-xl font-mono font-black text-emerald-400">45,230.50</span>
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                </div>
+
+                <!-- Bids (Green) -->
+                <div id="order-book-bids" class="space-y-0.5"></div>
+            </div>
+
+            <!-- Trade Form -->
+            <div class="glass-panel p-6 rounded-2xl border-t-2 border-indigo-500 relative overflow-hidden slide-in" style="animation-delay: 0.2s;">
+                <!-- Glow Effect -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.7)]"></div>
+
+                <!-- Tabs -->
+                <div class="flex bg-slate-900/50 p-1 rounded-xl mb-6">
+                    <button class="flex-1 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-sm font-bold shadow-sm">شراء</button>
+                    <button class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white text-sm font-bold transition-colors">بيع</button>
+                </div>
+
+                <!-- Wallet Info -->
+                <div class="flex justify-between text-xs text-slate-400 mb-2">
+                    <span>المتاح:</span>
+                    <span id="wallet-balance" class="font-mono text-white font-bold">$10,000.00</span>
+                </div>
+
+                <!-- Inputs -->
+                <div class="space-y-4">
+                    <div class="relative">
+                        <label class="text-xs text-slate-500 mb-1 block">السعر</label>
+                        <div class="relative">
+                            <input type="text" value="45230.50" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 font-mono text-slate-300 focus:outline-none cursor-not-allowed">
+                            <span class="absolute left-4 top-3 text-xs text-slate-500 font-bold">USDT</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <label class="text-xs text-slate-500 mb-1 block">الكمية</label>
+                        <div class="relative">
+                            <input type="number" id="trade-amount" placeholder="0.00" step="0.0001" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 font-mono text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all">
+                            <span class="absolute left-14 top-3 text-xs text-slate-500 font-bold">BTC</span>
+                            <button id="max-buy-btn" class="absolute left-2 top-2 bg-indigo-500/20 hover:bg-indigo-500 text-indigo-400 hover:text-white text-[10px] px-2 py-1 rounded transition-colors">MAX</button>
+                        </div>
+                    </div>
+
+                    <!-- Slider Placeholder -->
+                    <div class="pt-2">
+                        <div class="h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="w-1/3 h-full bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                        </div>
+                        <div class="flex justify-between mt-2">
+                            <span class="w-2 h-2 rounded-full bg-slate-700 cursor-pointer hover:bg-indigo-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-slate-700 cursor-pointer hover:bg-indigo-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-slate-700 cursor-pointer hover:bg-indigo-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-slate-700 cursor-pointer hover:bg-indigo-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-slate-700 cursor-pointer hover:bg-indigo-500"></span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <button id="btn-buy" class="bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black py-3 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 transition-all">
+                            شراء BTC
+                        </button>
+                        <button id="btn-sell" class="bg-rose-500 hover:bg-rose-400 text-white font-black py-3 rounded-xl shadow-lg shadow-rose-500/20 transform hover:-translate-y-1 transition-all">
+                            بيع BTC
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card glass-panel p-4 rounded-2xl cursor-pointer hover:bg-slate-800/50 transition-colors group flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-white">مركز المساعدة</h4>
+                    <p class="text-xs text-slate-500">تحتاج مساعدة في التداول؟</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/50 mt-12 bg-[#020617]">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-slate-500 text-sm">&copy; 2024 Akwadra Platform. جميع الحقوق محفوظة.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="social-link text-slate-400 hover:text-indigo-400"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                    <a href="#" class="social-link text-slate-400 hover:text-indigo-400"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Load Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
