@@ -8,7 +8,9 @@ let state = {
     currentPrice: 45230.50,
     walletBalance: 10000.00,
     holdings: 0.00,
-    history: []
+    history: [],
+    chart: null,
+    chartData: []
 };
 
 /**
@@ -16,7 +18,7 @@ let state = {
  */
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Components
-    initChart();
+    initChartJS();
     initOrderBook();
     
     // Start live updates
@@ -56,74 +58,137 @@ function setupEventListeners() {
  * Visual Components Logic
  */
 
-// --- Chart Simulation ---
-function initChart() {
-    const container = document.getElementById('chart-container');
-    if (!container) return;
-    
-    const barsCount = 24;
-    container.innerHTML = ''; // Clear existing
-    
-    // Add Grid and Lines back
-    container.innerHTML += `
-        <div class="absolute inset-0 pointer-events-none">
-            <div class="h-full w-full" style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px;"></div>
-        </div>
-        <div class="absolute top-1/2 left-0 w-full h-px bg-indigo-500/50 border-t border-dashed border-indigo-400/50 z-10 flex items-center opacity-50">
-             <span class="absolute left-0 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-r-md font-mono">LIVE</span>
-        </div>
-    `;
+// --- Chart.js Integration ---
+function initChartJS() {
+    const ctx = document.getElementById('cryptoChart');
+    if (!ctx) return;
 
-    for(let i = 0; i < barsCount; i++) {
-        const barWrapper = document.createElement('div');
-        barWrapper.className = 'relative flex flex-col justify-end items-center mx-1 flex-1 h-full group';
-        
-        const height = Math.floor(Math.random() * 60) + 15;
-        const isGreen = Math.random() > 0.48;
-        const colorClass = isGreen ? 'bg-emerald-500' : 'bg-rose-500';
-        const wickColor = isGreen ? 'text-emerald-500' : 'text-rose-500';
-        
-        // Candle body
-        const bar = document.createElement('div');
-        bar.className = `w-full rounded-sm transition-all duration-1000 ${colorClass} opacity-80 group-hover:opacity-100 shadow-lg`;
-        bar.style.height = `${height}%`;
-        
-        // Wick
-        const wickHeight = height + Math.floor(Math.random() * 20);
-        const wick = document.createElement('div');
-        wick.className = `candle-wick ${wickColor}`;
-        wick.style.height = `${wickHeight}%`;
-        wick.style.bottom = '0';
+    // Generate initial history data
+    const initialPoints = 50;
+    let price = 45230.50;
+    const labels = [];
+    const dataPoints = [];
 
-        barWrapper.appendChild(wick);
-        barWrapper.appendChild(bar);
-        container.appendChild(barWrapper);
+    for (let i = 0; i < initialPoints; i++) {
+        labels.push(i);
+        // Create some random movement
+        price = price + (Math.random() - 0.5) * 100;
+        dataPoints.push(price);
     }
+
+    state.chartData = dataPoints;
+
+    // Gradient Fill
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Indigo
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+    // Create Chart
+    state.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Bitcoin Price (USD)',
+                data: dataPoints,
+                borderColor: '#818cf8',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#6366f1',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#94a3b8',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        },
+                        title: function() {
+                            return 'BTC/USD';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: false,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    display: true,
+                    position: 'right',
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: {
+                            family: 'monospace'
+                        },
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function updateChart() {
-    const container = document.getElementById('chart-container');
-    if (!container) return;
+    if (!state.chart) return;
+
+    // Add new data point
+    const newData = state.currentPrice;
     
-    // We are looking for the bar wrappers, skipping the absolute grid/lines
-    const bars = Array.from(container.children).filter(el => el.classList.contains('group'));
-    
-    if (bars.length > 0) {
-        const randomIndex = Math.floor(Math.random() * bars.length);
-        const barWrapper = bars[randomIndex];
-        const bar = barWrapper.lastElementChild;
-        const wick = barWrapper.firstElementChild;
-        
-        const newHeight = Math.floor(Math.random() * 60) + 15;
-        const isGreen = Math.random() > 0.5;
-        
-        // Update Classes
-        bar.className = `w-full rounded-sm transition-all duration-1000 ${isGreen ? 'bg-emerald-500' : 'bg-rose-500'} opacity-80 group-hover:opacity-100 shadow-lg`;
-        bar.style.height = `${newHeight}%`;
-        
-        wick.className = `candle-wick ${isGreen ? 'text-emerald-500' : 'text-rose-500'}`;
-        wick.style.height = `${newHeight + 10}%`;
+    // Update dataset
+    const dataset = state.chart.data.datasets[0];
+    const labels = state.chart.data.labels;
+
+    // Remove oldest
+    if (dataset.data.length > 50) {
+        dataset.data.shift();
+        labels.shift();
     }
+
+    // Add new
+    dataset.data.push(newData);
+    labels.push(labels[labels.length - 1] + 1);
+
+    // Dynamic color based on trend
+    const startPrice = dataset.data[0];
+    const endPrice = dataset.data[dataset.data.length - 1];
+    const isPositive = endPrice >= startPrice;
+
+    // Update gradient and colors if trend changes (optional visual flair)
+    // For now we keep it indigo to match theme, but you could swap to Emerald/Rose here
+
+    state.chart.update('none'); // 'none' mode for performance
 }
 
 // --- Order Book ---
@@ -313,7 +378,13 @@ function showToast(message, type = 'info') {
         setTimeout(() => {
             if (toast.parentNode === container) {
                 container.removeChild(toast);
-            } সদ্য
+            }
         }, 300);
     }, 3000);
+}
+
+// Placeholder for timeframe buttons
+function changeTimeframe(period) {
+    showToast(`تم تغيير الفاصل الزمني إلى ${period}`, 'info');
+    // In a real app, this would fetch new data for the chart
 }
