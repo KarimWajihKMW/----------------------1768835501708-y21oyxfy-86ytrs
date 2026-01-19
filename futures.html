@@ -305,8 +305,8 @@
                     </div>
 
                     <div class="flex bg-slate-900/50 p-1 rounded-lg mb-3">
-                        <button class="flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm">Long</button>
-                        <button class="flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-colors">Short</button>
+                        <button id="tab-buy" class="flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm transition-all duration-200">Long</button>
+                        <button id="tab-sell" class="flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-all duration-200">Short</button>
                     </div>
                     
                     <div class="flex justify-between text-[10px] text-slate-400 mb-2">
@@ -325,11 +325,11 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 mt-3">
-                        <button id="btn-buy" class="bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all">
+                    <div class="mt-3">
+                        <button id="btn-buy" class="w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all">
                             Open Long
                         </button>
-                        <button id="btn-sell" class="bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all">
+                        <button id="btn-sell" class="w-full bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all hidden">
                             Open Short
                         </button>
                     </div>
