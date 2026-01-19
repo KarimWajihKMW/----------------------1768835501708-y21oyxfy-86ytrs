@@ -254,9 +254,10 @@
                  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.7)]"></div>
                  
                  <div>
+                    <!-- Tabs with IDs -->
                     <div class="flex bg-slate-900/50 p-1 rounded-lg mb-4">
-                        <button class="flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm">شراء</button>
-                        <button class="flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-colors">بيع</button>
+                        <button id="tab-buy" class="flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm transition-all duration-200">شراء</button>
+                        <button id="tab-sell" class="flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-all duration-200">بيع</button>
                     </div>
                     <div class="flex justify-between text-[10px] text-slate-400 mb-2">
                         <span>المتاح:</span>
@@ -274,12 +275,13 @@
                     </div>
                  </div>
 
-                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    <button id="btn-buy" class="bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-bold py-2.5 rounded-lg text-sm shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all">
-                        شراء
+                 <!-- Action Buttons container -->
+                 <div id="action-buttons" class="mt-2">
+                    <button id="btn-buy" class="w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-bold py-2.5 rounded-lg text-sm shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all">
+                        شراء BTC
                     </button>
-                    <button id="btn-sell" class="bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 rounded-lg text-sm shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all">
-                        بيع
+                    <button id="btn-sell" class="w-full bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 rounded-lg text-sm shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all hidden">
+                        بيع BTC
                     </button>
                 </div>
             </div>
