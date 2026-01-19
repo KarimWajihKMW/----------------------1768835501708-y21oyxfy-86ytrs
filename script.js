@@ -8,6 +8,7 @@ let state = {
     currentPrice: 45230.50,
     walletBalance: 10000.00,
     holdings: 0.00,
+    tradeMode: 'buy', // New: Track active trade tab
     history: [],
     chart: null,
     chartData: [],
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initOrderBook();
     initMarkets();
     initPositions(); // New for Futures
+    initTradeTabs(); // Initialize Trade Tabs Logic
     
     // Start live updates
     setInterval(updateMarket, 2000);
@@ -98,6 +100,58 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+// --- Tab Switching Logic ---
+function initTradeTabs() {
+    const tabBuy = document.getElementById('tab-buy');
+    const tabSell = document.getElementById('tab-sell');
+    
+    if (!tabBuy || !tabSell) return;
+
+    tabBuy.addEventListener('click', () => switchTradeMode('buy'));
+    tabSell.addEventListener('click', () => switchTradeMode('sell'));
+}
+
+function switchTradeMode(mode) {
+    state.tradeMode = mode;
+    
+    const tabBuy = document.getElementById('tab-buy');
+    const tabSell = document.getElementById('tab-sell');
+    const btnBuy = document.getElementById('btn-buy');
+    const btnSell = document.getElementById('btn-sell');
+
+    if(mode === 'buy') {
+        // Visuals for Tabs
+        tabBuy.className = 'flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm transition-all duration-200';
+        tabSell.className = 'flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-all duration-200 hover:bg-slate-800/50';
+        
+        // Toggle Buttons
+        if(btnBuy) {
+            btnBuy.classList.remove('hidden');
+            // Remove generic grid layout if it existed to allow full width
+            if(btnBuy.parentElement.classList.contains('grid')) {
+                 btnBuy.parentElement.classList.remove('grid', 'grid-cols-2');
+            }
+        }
+        if(btnSell) btnSell.classList.add('hidden');
+
+    } else {
+        // Visuals for Tabs
+        tabSell.className = 'flex-1 py-1.5 rounded-md bg-rose-500/10 text-rose-400 text-xs font-bold shadow-sm transition-all duration-200';
+        tabBuy.className = 'flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-all duration-200 hover:bg-slate-800/50';
+
+        // Toggle Buttons
+        if(btnSell) {
+            btnSell.classList.remove('hidden');
+             if(btnSell.parentElement.classList.contains('grid')) {
+                 btnSell.parentElement.classList.remove('grid', 'grid-cols-2');
+            }
+        }
+        if(btnBuy) btnBuy.classList.add('hidden');
+    }
+    
+    updateUI();
 }
 
 function closeNotifications() {
@@ -444,7 +498,20 @@ function executeTrade(type) {
 function updateUI() {
     const balanceEl = document.getElementById('wallet-balance');
     if (balanceEl) {
-        balanceEl.innerText = '$' + state.walletBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        // Determine what to show based on trade mode (Spot only)
+        // For futures, it usually stays USDT, so we check location or just default to walletBalance if elements missing
+        if (window.location.href.includes('spot.html')) {
+            if (state.tradeMode === 'buy') {
+                balanceEl.innerText = '$' + state.walletBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+            } else {
+                const pairName = document.getElementById('active-pair-name') ? document.getElementById('active-pair-name').innerText.split('/')[0] : 'BTC';
+                balanceEl.innerText = state.holdings.toFixed(4) + ' ' + pairName;
+            }
+        } else {
+            // Futures or other
+            balanceEl.innerText = '$' + state.walletBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        }
+        
         balanceEl.classList.add('flash-up');
         setTimeout(() => balanceEl.classList.remove('flash-up'), 500);
     }
