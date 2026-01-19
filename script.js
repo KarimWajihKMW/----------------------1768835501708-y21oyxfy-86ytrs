@@ -52,6 +52,63 @@ function setupEventListeners() {
             document.getElementById('trade-amount').value = maxAmount.toFixed(4);
         });
     }
+
+    // Notification Logic
+    const notifBtn = document.getElementById('notification-btn');
+    const notifDropdown = document.getElementById('notification-dropdown');
+
+    if(notifBtn && notifDropdown) {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = notifDropdown.classList.contains('invisible');
+            if(isHidden) {
+                notifDropdown.classList.remove('invisible', 'scale-95', 'opacity-0');
+                notifDropdown.classList.add('scale-100', 'opacity-100');
+                renderNotifications();
+            } else {
+                closeNotifications();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if(!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                closeNotifications();
+            }
+        });
+    }
+}
+
+function closeNotifications() {
+    const el = document.getElementById('notification-dropdown');
+    if(el) {
+        el.classList.add('invisible', 'scale-95', 'opacity-0');
+        el.classList.remove('scale-100', 'opacity-100');
+    }
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notification-list');
+    if(!list) return;
+    
+    const items = [
+        { title: 'تم استلام إيداع', msg: 'تم إيداع 0.5 BTC بنجاح في محفظتك', time: 'منذ 2 دقيقة', type: 'success' },
+        { title: 'تنبيه أمان', msg: 'تم تسجيل دخول جديد من جهاز غير معروف', time: 'منذ 1 ساعة', type: 'warning' },
+        { title: 'تحديث السوق', msg: 'ارتفع سعر BTC بنسبة 5% خلال الساعة الماضية', time: 'منذ 3 ساعات', type: 'info' },
+        { title: 'توصية شراء', msg: 'تحليل جديد: فرصة شراء قوية لعملة ETH', time: 'منذ 5 ساعات', type: 'info' }
+    ];
+    
+    list.innerHTML = items.map(item => `
+        <div class="p-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors cursor-pointer group">
+            <div class="flex items-start gap-3">
+                <div class="mt-1 w-2 h-2 rounded-full ${item.type === 'success' ? 'bg-emerald-500' : item.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'}"></div>
+                <div>
+                    <h4 class="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">${item.title}</h4>
+                    <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">${item.msg}</p>
+                    <span class="text-[9px] text-slate-500 mt-2 block">${item.time}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 /**
@@ -378,7 +435,7 @@ function showToast(message, type = 'info') {
         setTimeout(() => {
             if (toast.parentNode === container) {
                 container.removeChild(toast);
-            }
+            }тном
         }, 300);
     }, 3000);
 }
