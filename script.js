@@ -10,7 +10,18 @@ let state = {
     holdings: 0.00,
     history: [],
     chart: null,
-    chartData: []
+    chartData: [],
+    markets: [
+        { pair: 'BTC/USDT', price: 45230.50, change: 2.45 },
+        { pair: 'ETH/USDT', price: 2340.10, change: -1.20 },
+        { pair: 'SOL/USDT', price: 102.50, change: 5.70 },
+        { pair: 'BNB/USDT', price: 310.20, change: 0.80 },
+        { pair: 'XRP/USDT', price: 0.52, change: -0.50 },
+        { pair: 'ADA/USDT', price: 0.48, change: 1.10 },
+        { pair: 'DOGE/USDT', price: 0.08, change: 3.20 },
+        { pair: 'DOT/USDT', price: 6.90, change: -2.10 },
+        { pair: 'MATIC/USDT', price: 0.85, change: 0.40 }
+    ]
 };
 
 /**
@@ -20,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Components
     initChartJS();
     initOrderBook();
+    initMarkets();
     
     // Start live updates
     setInterval(updateMarket, 2000);
@@ -111,9 +123,52 @@ function renderNotifications() {
     `).join('');
 }
 
-/**
- * Visual Components Logic
- */
+// --- Markets List Integration ---
+function initMarkets() {
+    const list = document.getElementById('markets-list');
+    if(!list) return;
+    renderMarkets();
+}
+
+function renderMarkets() {
+    const list = document.getElementById('markets-list');
+    if(!list) return;
+
+    list.innerHTML = state.markets.map(m => {
+        const isUp = m.change >= 0;
+        return `
+        <div class="flex justify-between items-center px-3 py-2 hover:bg-slate-800/50 cursor-pointer transition-colors group" onclick="switchPair('${m.pair}')">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-300 group-hover:text-white">${m.pair.split('/')[0]}</span>
+            </div>
+            <div class="text-right">
+                <div class="text-xs font-mono font-bold text-white">${m.price.toLocaleString()}</div>
+                <div class="text-[9px] font-bold ${isUp ? 'text-emerald-400' : 'text-rose-400'}">${isUp ? '+' : ''}${m.change}%</div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function switchPair(pair) {
+    showToast(`تم الانتقال إلى سوق ${pair}`, 'info');
+    // Simulate changing chart data
+    if(state.chart) {
+        // Reset data randomly
+        state.currentPrice = state.markets.find(m => m.pair === pair).price;
+        state.chartData = Array(50).fill(0).map((_, i) => state.currentPrice + (Math.random() - 0.5) * (state.currentPrice * 0.01));
+        state.chart.data.datasets[0].data = state.chartData;
+        state.chart.update();
+        
+        // Update Labels
+        const nameEl = document.getElementById('active-pair-name');
+        const priceEl = document.getElementById('active-pair-price');
+        if(nameEl) nameEl.innerText = pair;
+        if(priceEl) priceEl.innerText = '$' + state.currentPrice.toLocaleString();
+        
+        updateUI();
+    }
+}
 
 // --- Chart.js Integration ---
 function initChartJS() {
@@ -146,7 +201,7 @@ function initChartJS() {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Bitcoin Price (USD)',
+                label: 'Price (USD)',
                 data: dataPoints,
                 borderColor: '#818cf8',
                 backgroundColor: gradient,
@@ -181,9 +236,6 @@ function initChartJS() {
                     callbacks: {
                         label: function(context) {
                             return '$' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2});
-                        },
-                        title: function() {
-                            return 'BTC/USD';
                         }
                     }
                 }
@@ -191,9 +243,7 @@ function initChartJS() {
             scales: {
                 x: {
                     display: false,
-                    grid: {
-                        display: false
-                    }
+                    grid: { display: false }
                 },
                 y: {
                     display: true,
@@ -204,9 +254,7 @@ function initChartJS() {
                     },
                     ticks: {
                         color: '#64748b',
-                        font: {
-                            family: 'monospace'
-                        },
+                        font: { family: 'monospace' },
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
@@ -220,32 +268,18 @@ function initChartJS() {
 function updateChart() {
     if (!state.chart) return;
 
-    // Add new data point
     const newData = state.currentPrice;
-    
-    // Update dataset
     const dataset = state.chart.data.datasets[0];
     const labels = state.chart.data.labels;
 
-    // Remove oldest
     if (dataset.data.length > 50) {
         dataset.data.shift();
         labels.shift();
     }
 
-    // Add new
     dataset.data.push(newData);
     labels.push(labels[labels.length - 1] + 1);
-
-    // Dynamic color based on trend
-    const startPrice = dataset.data[0];
-    const endPrice = dataset.data[dataset.data.length - 1];
-    const isPositive = endPrice >= startPrice;
-
-    // Update gradient and colors if trend changes (optional visual flair)
-    // For now we keep it indigo to match theme, but you could swap to Emerald/Rose here
-
-    state.chart.update('none'); // 'none' mode for performance
+    state.chart.update('none');
 }
 
 // --- Order Book ---
@@ -263,14 +297,13 @@ function renderOrderRows(elementId, isAsk) {
     
     for(let i=0; i<count; i++) {
         const row = document.createElement('div');
-        row.className = 'grid grid-cols-3 gap-2 relative overflow-hidden p-1.5 rounded hover:bg-slate-800 cursor-pointer transition-colors text-xs font-mono';
+        row.className = 'grid grid-cols-3 gap-2 relative overflow-hidden p-1 rounded hover:bg-slate-800 cursor-pointer transition-colors text-[10px] font-mono';
         
-        const offset = (i + 1) * (Math.random() * 40);
+        const offset = (i + 1) * (Math.random() * (state.currentPrice * 0.001));
         const price = isAsk ? state.currentPrice + offset : state.currentPrice - offset;
         const amount = (Math.random() * 0.8).toFixed(4);
         const total = (price * parseFloat(amount) / 1000).toFixed(1) + 'k';
         
-        // Volume Bar
         const volumePercent = Math.floor(Math.random() * 90) + 10;
         const bgBar = document.createElement('div');
         bgBar.className = `absolute top-0 right-0 h-full opacity-10 ${isAsk ? 'bg-rose-500' : 'bg-emerald-500'}`;
@@ -288,15 +321,16 @@ function renderOrderRows(elementId, isAsk) {
 
 // --- Market Simulation ---
 function updateMarket() {
-    // Simulate Price Change
-    const change = (Math.random() - 0.5) * 65;
+    // Simulate Main Price Change
+    const change = (Math.random() - 0.5) * (state.currentPrice * 0.002);
     state.currentPrice += change;
     
     // Update UI elements
     const priceEls = [
         document.getElementById('btc-price'), 
         document.getElementById('main-price'), 
-        document.getElementById('mid-price')
+        document.getElementById('mid-price'),
+        document.getElementById('active-pair-price')
     ];
     
     const priceStr = '$' + state.currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -304,17 +338,27 @@ function updateMarket() {
     priceEls.forEach(el => {
         if(el) {
             el.innerText = el.id === 'mid-price' ? state.currentPrice.toFixed(2) : priceStr;
-            
-            // Visual Flash Effect
             el.classList.remove('flash-up', 'flash-down');
-            void el.offsetWidth; // Trigger reflow to restart animation
+            void el.offsetWidth;
             el.classList.add(change > 0 ? 'flash-up' : 'flash-down');
         }
     });
     
-    // Update input field placeholder value
     const priceInput = document.querySelector('input[readonly]');
     if (priceInput) priceInput.value = state.currentPrice.toFixed(2);
+
+    // Simulate Other Markets
+    state.markets.forEach(m => {
+        m.price += (Math.random() - 0.5) * (m.price * 0.005);
+        m.change += (Math.random() - 0.5) * 0.1;
+        m.change = parseFloat(m.change.toFixed(2));
+    });
+    
+    // Re-render markets list if visible (poor man's reactivity)
+    const list = document.getElementById('markets-list');
+    if(list && !list.matches(':hover')) { // Don't update if hovering to prevent jumpiness
+        renderMarkets();
+    }
 
     updateChart();
     initOrderBook();
@@ -372,26 +416,24 @@ function addToHistory(coin, type, price, amount) {
     const row = document.createElement('tr');
     const isBuy = type === 'شراء';
     
-    row.className = 'hover:bg-slate-800/30 transition-colors group animate-pulse bg-indigo-500/10';
+    row.className = 'hover:bg-slate-800/30 transition-colors group animate-pulse bg-indigo-500/10 border-b border-slate-800/30';
     row.innerHTML = `
-        <td class="px-4 py-4 font-bold text-slate-200 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center text-xs">₿</span>
+        <td class="px-3 py-2 font-bold text-slate-200 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center text-[10px]">₿</span>
             ${coin}
         </td>
-        <td class="px-4 py-4"><span class="${isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} px-2 py-1 rounded-md text-xs font-bold">${type}</span></td>
-        <td class="px-4 py-4 font-mono text-slate-300">$${price.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-        <td class="px-4 py-4 font-mono text-slate-300">${amount}</td>
-        <td class="px-4 py-4 text-slate-500 text-xs">الآن</td>
+        <td class="px-3 py-2"><span class="${isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} px-1.5 py-0.5 rounded text-[10px] font-bold">${type}</span></td>
+        <td class="px-3 py-2 font-mono text-slate-300">$${price.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+        <td class="px-3 py-2 font-mono text-slate-300">${amount}</td>
+        <td class="px-3 py-2 text-slate-500 text-[10px]">الآن</td>
     `;
     
     list.insertBefore(row, list.firstChild);
     
-    // Remove pulse class
     setTimeout(() => {
         row.classList.remove('animate-pulse', 'bg-indigo-500/10');
     }, 2000);
     
-    // Limit list size
     if (list.children.length > 10) {
         list.removeChild(list.lastChild);
     }
@@ -404,7 +446,6 @@ function showToast(message, type = 'info') {
     
     const toast = document.createElement('div');
     
-    // Colors based on type
     let colors = 'border-indigo-500 bg-slate-800';
     let icon = '<svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
     
@@ -424,24 +465,20 @@ function showToast(message, type = 'info') {
     
     container.appendChild(toast);
     
-    // Animate in
     requestAnimationFrame(() => {
         toast.classList.remove('translate-x-full');
     });
     
-    // Remove after 3s
     setTimeout(() => {
         toast.classList.add('translate-x-full', 'opacity-0');
         setTimeout(() => {
             if (toast.parentNode === container) {
                 container.removeChild(toast);
-            }тном
+            }
         }, 300);
     }, 3000);
 }
 
-// Placeholder for timeframe buttons
 function changeTimeframe(period) {
     showToast(`تم تغيير الفاصل الزمني إلى ${period}`, 'info');
-    // In a real app, this would fetch new data for the chart
 }
