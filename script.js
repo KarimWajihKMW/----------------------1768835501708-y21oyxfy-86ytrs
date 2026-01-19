@@ -313,7 +313,7 @@ function showToast(message, type = 'info') {
         setTimeout(() => {
             if (toast.parentNode === container) {
                 container.removeChild(toast);
-            }
+            } সদ্য
         }, 300);
     }, 3000);
 }
