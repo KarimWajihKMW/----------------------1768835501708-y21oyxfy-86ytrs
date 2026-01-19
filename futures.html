@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العقود الآجلة | منصة كريبتو تريد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Cairo', sans-serif;
+        background-color: #020617;
+        background-image: 
+          radial-gradient(at 10% 10%, hsla(253,16%,7%,1) 0, transparent 50%), 
+          radial-gradient(at 90% 90%, hsla(225,39%,30%,1) 0, transparent 50%), 
+          radial-gradient(at 50% 50%, hsla(339,49%,30%,1) 0, transparent 50%);
+        color: #e2e8f0;
+        overflow-x: hidden;
+      }
+      
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+      
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .glass-button {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      .glass-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Animations */
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-float { animation: float 6s ease-in-out infinite; }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .slide-in { animation: slideIn 0.5s ease-out forwards; }
+
+      @keyframes ticker {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+      .animate-marquee-rtl {
+        display: inline-block;
+        animation: ticker 25s linear infinite;
+        white-space: nowrap;
+      }
+      
+      /* Price Flash Effects */
+      @keyframes flash-green-text {
+        0% { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.8); transform: scale(1.05); }
+        100% { color: white; transform: scale(1); }
+      }
+      @keyframes flash-red-text {
+        0% { color: #fb7185; text-shadow: 0 0 10px rgba(251, 113, 133, 0.8); transform: scale(1.05); }
+        100% { color: white; transform: scale(1); }
+      }
+      .flash-up { animation: flash-green-text 0.6s ease-out; }
+      .flash-down { animation: flash-red-text 0.6s ease-out; }
+      
+      input[type=number]::-webkit-inner-spin-button, 
+      input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+      }
+      
+      /* Range Slider */
+      input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+      }
+      input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #6366f1;
+        cursor: pointer;
+        margin-top: -6px;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+      }
+      input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #334155;
+        border-radius: 2px;
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- Navbar -->
+    <nav class="glass-panel sticky top-0 z-50 border-b border-slate-800/60">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 animate-float">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <a href="index.html" class="flex flex-col group">
+                        <span class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 group-hover:to-white transition-all">كريبتو تريد</span>
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase -mt-1">Futures Trading</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center space-x-6 space-x-reverse">
+                    <a href="index.html" class="text-sm font-bold text-slate-400 hover:text-white transition-colors hover:border-b-2 hover:border-slate-500 pb-1">الرئيسية</a>
+                    <a href="spot.html" class="text-sm font-bold text-slate-400 hover:text-white transition-colors hover:border-b-2 hover:border-slate-500 pb-1">تداول فوري</a>
+                    <a href="futures.html" class="text-sm font-bold text-white transition-colors border-b-2 border-indigo-500 pb-1">العقود الآجلة</a>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <button id="notification-btn" class="glass-button w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white relative">
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        </button>
+                        <div id="notification-dropdown" class="absolute left-0 mt-3 w-80 glass-panel rounded-2xl shadow-2xl invisible opacity-0 transform scale-95 transition-all duration-200 origin-top-left z-50 overflow-hidden">
+                            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+                                <span class="font-bold text-white text-sm">الإشعارات</span>
+                                <span class="text-xs text-indigo-400 cursor-pointer hover:underline">تحديد الكل كمقروء</span>
+                            </div>
+                            <div id="notification-list" class="max-h-64 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <a href="profile.html" class="flex items-center gap-2 pl-2 pr-1 py-1 glass-button rounded-full">
+                        <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="User" class="w-8 h-8 rounded-full border border-slate-600">
+                        <span class="text-xs font-bold text-white hidden sm:block ml-2">حسابي</span>
+                        <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ticker Tape -->
+    <div class="bg-slate-900/50 border-b border-slate-800/50 h-10 flex items-center overflow-hidden">
+        <div class="animate-marquee-rtl flex items-center gap-8 px-4 text-sm font-mono">
+            <span class="flex items-center gap-2 text-slate-400">BTC/USDT <span class="text-emerald-400 font-bold">+2.4%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">ETH/USDT <span class="text-rose-400 font-bold">-1.2%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">SOL/USDT <span class="text-emerald-400 font-bold">+5.7%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">BNB/USDT <span class="text-emerald-400 font-bold">+0.8%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">XRP/USDT <span class="text-rose-400 font-bold">-0.5%</span></span>
+             <span class="flex items-center gap-2 text-slate-400 border-r border-slate-800 pr-8">|</span>
+             <span class="flex items-center gap-2 text-slate-400">BTC/USDT <span class="text-emerald-400 font-bold">+2.4%</span></span>
+            <span class="flex items-center gap-2 text-slate-400">ETH/USDT <span class="text-rose-400 font-bold">-1.2%</span></span>
+        </div>
+    </div>
+
+    <!-- Pro Trading Layout -->
+    <main class="flex-grow max-w-[1920px] mx-auto w-full p-2 lg:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-120px)] overflow-y-auto lg:overflow-hidden">
+        
+        <!-- Left: Markets Panel -->
+        <div class="lg:col-span-2 hidden lg:flex flex-col gap-4">
+            <div class="glass-panel rounded-xl flex-grow overflow-hidden flex flex-col slide-in">
+                <div class="p-3 border-b border-slate-800/50">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-white">الأسواق</span>
+                        <span class="text-[10px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">Perpetual</span>
+                    </div>
+                    <div class="relative">
+                         <input type="text" placeholder="بحث..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 outline-none pl-8">
+                         <svg class="w-3 h-3 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex-grow overflow-y-auto">
+                    <div class="flex justify-between px-3 py-2 text-[10px] text-slate-500 font-bold uppercase">
+                        <span>الزوج</span>
+                        <span>السعر</span>
+                    </div>
+                    <div id="markets-list" class="divide-y divide-slate-800/30">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle: Chart & Positions -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            <!-- Chart -->
+            <div class="glass-panel rounded-xl p-4 flex-grow relative slide-in min-h-[400px]" style="animation-delay: 0.1s;">
+                 <div class="absolute top-4 right-4 z-10 flex flex-col">
+                     <h2 id="active-pair-name" class="text-2xl font-black text-white">BTC/USDT <span class="text-sm text-slate-400 font-normal ml-2">Perp</span></h2>
+                     <span id="active-pair-price" class="text-lg font-mono text-emerald-400">$45,230.50</span>
+                 </div>
+                 <div class="absolute top-4 left-4 z-10 flex gap-1 bg-slate-900/80 p-1 rounded-lg border border-slate-700/50">
+                    <button onclick="changeTimeframe('1H')" class="px-2 py-0.5 text-xs font-bold rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">1H</button>
+                    <button onclick="changeTimeframe('4H')" class="px-2 py-0.5 text-xs font-bold rounded bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">4H</button>
+                    <button onclick="changeTimeframe('1D')" class="px-2 py-0.5 text-xs font-bold rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">1D</button>
+                </div>
+                <canvas id="cryptoChart"></canvas>
+            </div>
+            
+            <!-- Positions Table (Replaces generic History) -->
+            <div class="glass-panel rounded-xl h-64 overflow-hidden flex flex-col slide-in" style="animation-delay: 0.2s;">
+                 <div class="px-4 py-2 border-b border-slate-800/60 flex justify-between items-center bg-slate-900/30">
+                    <div class="flex gap-4">
+                        <h3 class="text-xs font-bold text-white border-b-2 border-indigo-500 pb-2 -mb-2.5">الصفقات المفتوحة (0)</h3>
+                        <h3 class="text-xs font-bold text-slate-500 hover:text-white cursor-pointer transition-colors">الطلبات المعلقة</h3>
+                        <h3 class="text-xs font-bold text-slate-500 hover:text-white cursor-pointer transition-colors">سجل الصفقات</h3>
+                    </div>
+                </div>
+                <div class="overflow-x-auto flex-grow">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-900/50 text-slate-500 uppercase font-semibold">
+                            <tr>
+                                <th class="px-3 py-2">الزوج</th>
+                                <th class="px-3 py-2">الرافعة</th>
+                                <th class="px-3 py-2">الحجم</th>
+                                <th class="px-3 py-2">سعر الدخول</th>
+                                <th class="px-3 py-2">سعر التصفية</th>
+                                <th class="px-3 py-2">الربح/الخسارة</th>
+                                <th class="px-3 py-2">إغلاق</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-list" class="divide-y divide-slate-800/30">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: OrderBook & Form -->
+        <div class="lg:col-span-3 flex flex-col gap-4">
+            
+            <!-- Order Book -->
+            <div class="glass-panel p-3 rounded-xl h-2/5 flex flex-col slide-in" style="animation-delay: 0.1s;">
+                <h3 class="text-xs font-bold text-slate-400 mb-2 px-1">دفتر الطلبات</h3>
+                <div class="grid grid-cols-3 text-[9px] text-slate-500 font-bold px-1 mb-1">
+                    <span>السعر</span>
+                    <span class="text-center">الكمية</span>
+                    <span class="text-left">الإجمالي</span>
+                </div>
+                <div class="flex-grow overflow-hidden flex flex-col gap-1">
+                    <div id="order-book-asks" class="space-y-0.5 overflow-hidden"></div>
+                    <div class="py-1 border-y border-slate-800/50 flex justify-center items-center gap-2">
+                        <span id="mid-price" class="text-lg font-mono font-black text-emerald-400">45,230.50</span>
+                    </div>
+                    <div id="order-book-bids" class="space-y-0.5 overflow-hidden"></div>
+                </div>
+            </div>
+
+            <!-- Futures Trade Form -->
+            <div class="glass-panel p-4 rounded-xl h-3/5 flex flex-col justify-between border-t-2 border-purple-500 relative overflow-hidden slide-in" style="animation-delay: 0.2s;">
+                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.7)]"></div>
+                 
+                 <div class="flex flex-col h-full">
+                    <!-- Margin Type -->
+                    <div class="flex justify-between items-center mb-3">
+                        <button class="bg-slate-800 hover:bg-slate-700 text-xs text-white px-2 py-1 rounded transition-colors">Cross</button>
+                        <div class="flex items-center gap-1">
+                             <span class="text-[10px] text-slate-400">Leverage:</span>
+                             <span id="leverage-value" class="text-xs font-bold text-white">20x</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Leverage Slider -->
+                    <div class="mb-4 px-1">
+                        <input type="range" min="1" max="100" value="20" id="leverage-slider" class="w-full accent-indigo-500">
+                        <div class="flex justify-between text-[8px] text-slate-500 mt-1">
+                            <span>1x</span>
+                            <span>25x</span>
+                            <span>50x</span>
+                            <span>75x</span>
+                            <span>100x</span>
+                        </div>
+                    </div>
+
+                    <div class="flex bg-slate-900/50 p-1 rounded-lg mb-3">
+                        <button class="flex-1 py-1.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-sm">Long</button>
+                        <button class="flex-1 py-1.5 rounded-md text-slate-400 hover:text-white text-xs font-bold transition-colors">Short</button>
+                    </div>
+                    
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-2">
+                        <span>Margin Avail:</span>
+                        <span id="wallet-balance" class="font-mono text-white font-bold">$10,000.00</span>
+                    </div>
+                    
+                    <div class="space-y-2 flex-grow">
+                        <div class="relative">
+                            <label class="text-[10px] text-slate-500 mb-1 block">السعر</label>
+                            <input type="text" value="Market" readonly class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 font-mono text-xs text-slate-300 outline-none">
+                        </div>
+                        <div class="relative">
+                            <label class="text-[10px] text-slate-500 mb-1 block">الكمية (USDT)</label>
+                            <input type="number" id="trade-amount" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 font-mono text-xs text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <button id="btn-buy" class="bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 transition-all">
+                            Open Long
+                        </button>
+                        <button id="btn-sell" class="bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 rounded-lg text-xs shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all">
+                            Open Short
+                        </button>
+                    </div>
+                 </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
